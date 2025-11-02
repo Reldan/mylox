@@ -27,6 +27,11 @@ public class AstPrinter implements Expr.Visitor<String>{
         return parenthesize(expr.operator.lexeme, expr.right);
     }
 
+    @Override
+    public String visitConditionalExpr(Expr.Conditional expr) {
+        return parenthesize("?:", expr.condition, expr.thenBranch, expr.elseBranch);
+    }
+
     private String parenthesize(String name, Expr... exprs) {
         StringBuilder builder = new StringBuilder();
 
@@ -79,6 +84,11 @@ class ReversePolishPrinter implements Expr.Visitor<String>{
     @Override
     public String visitUnaryExpr(Expr.Unary expr) {
         return transform(expr.operator.lexeme, expr.right);
+    }
+
+    @Override
+    public String visitConditionalExpr(Expr.Conditional expr) {
+        return transform("?:", expr.condition, expr.thenBranch, expr.elseBranch);
     }
 
     private String transform(String name, Expr... exprs) {

@@ -27,16 +27,35 @@ public class Parser {
     }
 
     private Expr comma() {
-        Expr expr = equality();
+        Expr expr = condition();
         while (match(COMMA)) {
             Token operator = previous();
-            Expr right = equality();
+            Expr right = condition();
             expr = new Expr.Binary(expr, operator, right);
         }
         return expr;
     }
 
+    private Expr condition() {
+        Expr expr = equality();
+
+        if (match(QUESTION)) {
+            Expr thenExpr = condition();
+            consume(COLON, "Expect ':' after then branch of conditional expression.");
+            Expr elseExpr = condition();
+            expr = new Expr.Conditional(expr, thenExpr, elseExpr);
+        }
+        return expr;
+    }
+
     private Expr equality() {
+        if  (match(BANG_EQUAL, EQUAL_EQUAL)) {
+            Token operator = previous();
+            error(operator, "Equality operator requires a left operand.");
+            comparison();
+            return null;
+        }
+
         Expr expr = comparison();
 
         while (match(BANG_EQUAL, EQUAL_EQUAL)) {
@@ -49,6 +68,13 @@ public class Parser {
     }
 
     private Expr comparison() {
+        if (match(GREATER,  GREATER_EQUAL, LESS, LESS_EQUAL)) {
+            Token operator = previous();
+            error(operator, "Comparison operator requires a left operand.");
+            term();
+            return null;
+        }
+
         Expr expr = term();
 
         while (match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
@@ -61,6 +87,13 @@ public class Parser {
     }
 
     private Expr term() {
+        if (match(PLUS)) {
+            Token operator = previous();
+            error(operator, "Plus operator requires a left operand.");
+            factor();
+            return null;
+        }
+
         Expr expr = factor();
 
         while (match(MINUS, PLUS)) {
@@ -73,6 +106,13 @@ public class Parser {
     }
 
     private Expr factor() {
+        if (match(SLASH, STAR)) {
+            Token operator = previous();
+            error(operator, "Factor operator requires a left operand.");
+            unary();
+            return null;
+        }
+
         Expr expr = unary();
 
         while (match(SLASH, STAR)) {
@@ -110,7 +150,6 @@ public class Parser {
         }
 
         throw error(peek(), "Expect expression.");
-
     }
 
     private boolean match(TokenType... types) {
@@ -128,8 +167,6 @@ public class Parser {
 
         throw error(peek(), message);
     }
-
-
 
     private boolean check(TokenType type) {
         if (isAtEnd()) return false;
