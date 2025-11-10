@@ -8,3 +8,9 @@ class RuntimeError extends RuntimeException {
         this.token = token;
     }
 }
+
+class BreakException extends RuntimeError {
+    BreakException(Token token) {
+        super(token, "Break outside of a loop.");
+    }
+}

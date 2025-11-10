@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Lox {
@@ -58,7 +59,16 @@ public class Lox {
         // Stop if there was a syntax error.
         if  (hadError) return;
 
-        interpreter.interpret(statements);
+        List<Stmt> printableStatements = new ArrayList<>();
+        for  (Stmt statement : statements) {
+            if (statement instanceof Stmt.Expression) {
+                printableStatements.add(new Stmt.Print(((Stmt.Expression) statement).expression));
+            } else {
+                printableStatements.add(statement);
+            }
+        }
+
+        interpreter.interpret(printableStatements);
     }
 
     static void error(int line, String message) {
