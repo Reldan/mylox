@@ -38,10 +38,7 @@ public class Parser {
 
     private Stmt declaration() {
         try {
-            if (check(FUN) && checkNext(IDENTIFIER)) {
-                consume(FUN, null);
-                return function("function");
-            }
+            if (match(FUN)) return function("function");
             if (match(VAR)) return varDeclaration();
 
             return statement();
@@ -170,10 +167,6 @@ public class Parser {
 
     private Stmt.Function function(String kind) {
         Token name = consume(IDENTIFIER, "Expect " + kind + " name.");
-        return new Stmt.Function(name, functionBody(kind));
-    }
-
-    private Expr.Function functionBody(String kind) {
         consume(LEFT_PAREN, "Expect '(' after " + kind + " name.");
         List<Token> parameters = new ArrayList<>();
         if (!check(RIGHT_PAREN)) {
@@ -189,7 +182,7 @@ public class Parser {
 
         consume(LEFT_BRACE, "Expect '{' before " + kind + " body.");
         List<Stmt> body = block();
-        return new Expr.Function(parameters, body);
+        return new Stmt.Function(name, parameters, body);
     }
 
     private List<Stmt> block() {
@@ -377,7 +370,6 @@ public class Parser {
         if (match(FALSE)) return new Expr.Literal(false);
         if (match(TRUE)) return new Expr.Literal(true);
         if (match(NIL)) return new Expr.Literal(null);
-        if (match(FUN)) return functionBody("function");
 
         if (match(NUMBER, STRING)) {
             return new Expr.Literal(previous().literal);

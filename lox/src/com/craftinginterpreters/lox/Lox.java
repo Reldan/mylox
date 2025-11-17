@@ -59,6 +59,10 @@ public class Lox {
         // Stop if there was a syntax error.
         if  (hadError) return;
 
+        Resolver resolver = new Resolver(interpreter);
+        resolver.resolve(statements);
+        if (hadError) return;
+
         List<Stmt> printableStatements = new ArrayList<>();
         for  (Stmt statement : statements) {
             if (isRepl && statement instanceof Stmt.Expression) {
