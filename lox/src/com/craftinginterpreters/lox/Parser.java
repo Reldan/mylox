@@ -3,7 +3,6 @@ package com.craftinginterpreters.lox;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 import static  com.craftinginterpreters.lox.TokenType.*;
 
@@ -28,12 +27,6 @@ public class Parser {
 
     private Expr expression() {
        return assignment();
-    }
-
-    private boolean checkNext(TokenType tokenType) {
-        if (isAtEnd()) return false;
-        if (tokens.get(current + 1).type == EOF) return false;
-        return tokens.get(current + 1).type == tokenType;
     }
 
     private Stmt declaration() {
@@ -75,16 +68,9 @@ public class Parser {
         if (match(PRINT)) return printStatement();
         if (match(RETURN)) return returnStatement();
         if (match(WHILE)) return whileStatement();
-        if (match(BREAK)) return breakStatement();
         if (match(LEFT_BRACE)) return new Stmt.Block(block());
 
         return expressionStatement();
-    }
-
-    private Stmt breakStatement() {
-        Token token = previous();
-        consume(SEMICOLON, "Expect ';' after break.");
-        return new Stmt.Break(token);
     }
 
     private Stmt forStatement() {
@@ -144,7 +130,7 @@ public class Parser {
 
     private Stmt printStatement() {
         Expr expr = expression();
-        consume(SEMICOLON, "Expect ':' after value.");
+        consume(SEMICOLON, "Expect ';' after value.");
         return new Stmt.Print(expr);
     }
 
@@ -232,32 +218,13 @@ public class Parser {
         while (match(AND)) {
             Token operator = previous();
             Expr right = equality();
-            expr = new Expr.Binary(expr, operator, right);
+            expr = new Expr.Logical(expr, operator, right);
         }
 
-        return expr;
-    }
-
-    private Expr condition() {
-        Expr expr = equality();
-
-        if (match(QUESTION)) {
-            Expr thenExpr = condition();
-            consume(COLON, "Expect ':' after then branch of conditional expression.");
-            Expr elseExpr = condition();
-            expr = new Expr.Conditional(expr, thenExpr, elseExpr);
-        }
         return expr;
     }
 
     private Expr equality() {
-        if  (match(BANG_EQUAL, EQUAL_EQUAL)) {
-            Token operator = previous();
-            error(operator, "Equality operator requires a left operand.");
-            comparison();
-            return null;
-        }
-
         Expr expr = comparison();
 
         while (match(BANG_EQUAL, EQUAL_EQUAL)) {
@@ -270,13 +237,6 @@ public class Parser {
     }
 
     private Expr comparison() {
-        if (match(GREATER,  GREATER_EQUAL, LESS, LESS_EQUAL)) {
-            Token operator = previous();
-            error(operator, "Comparison operator requires a left operand.");
-            term();
-            return null;
-        }
-
         Expr expr = term();
 
         while (match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
@@ -289,13 +249,6 @@ public class Parser {
     }
 
     private Expr term() {
-        if (match(PLUS)) {
-            Token operator = previous();
-            error(operator, "Plus operator requires a left operand.");
-            factor();
-            return null;
-        }
-
         Expr expr = factor();
 
         while (match(MINUS, PLUS)) {
@@ -308,13 +261,6 @@ public class Parser {
     }
 
     private Expr factor() {
-        if (match(SLASH, STAR)) {
-            Token operator = previous();
-            error(operator, "Factor operator requires a left operand.");
-            unary();
-            return null;
-        }
-
         Expr expr = unary();
 
         while (match(SLASH, STAR)) {

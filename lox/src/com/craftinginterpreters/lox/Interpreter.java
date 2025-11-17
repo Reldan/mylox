@@ -47,57 +47,17 @@ public class Interpreter implements Expr.Visitor<Object>,
             case BANG_EQUAL: return !isEqual(left, right);
             case EQUAL_EQUAL: return isEqual(left, right);
             case GREATER:
-                if (left instanceof Double && right instanceof Double) {
-                    return (double)left > (double)right;
-                }
-                if (left instanceof String leftString && right instanceof String rightString) {
-                    int result = leftString.compareTo( rightString);
-                    return result > 0;
-                }
-                if (left instanceof Boolean leftBoolean && right instanceof Boolean rightBoolean) {
-                    int result = leftBoolean.compareTo(rightBoolean);
-                    return result > 0;
-                }
-                throw new RuntimeError(expr.operator, "Operands must have the same type.");
+                checkNumberOperands(expr.operator, left, right);
+                return (double)left > (double)right;
             case GREATER_EQUAL:
-                if (left instanceof Double && right instanceof Double) {
-                    return (double)left >= (double)right;
-                }
-                if (left instanceof String leftString && right instanceof String rightString) {
-                    int result = leftString.compareTo( rightString);
-                    return result >= 0;
-                }
-                if (left instanceof Boolean leftBoolean && right instanceof Boolean rightBoolean) {
-                    int result = leftBoolean.compareTo(rightBoolean);
-                    return result >= 0;
-                }
-                throw new RuntimeError(expr.operator, "Operands must have the same type.");
+                checkNumberOperands(expr.operator, left, right);
+                return (double)left >= (double)right;
             case LESS:
-                if (left instanceof Double && right instanceof Double) {
-                    return (double)left < (double)right;
-                }
-                if (left instanceof String leftString && right instanceof String rightString) {
-                    int result = leftString.compareTo( rightString);
-                    return result < 0;
-                }
-                if (left instanceof Boolean leftBoolean && right instanceof Boolean rightBoolean) {
-                    int result = leftBoolean.compareTo(rightBoolean);
-                    return result < 0;
-                }
-                throw new RuntimeError(expr.operator, "Operands must have the same type.");
+                checkNumberOperands(expr.operator, left, right);
+                return (double)left < (double)right;
             case LESS_EQUAL:
-                if (left instanceof Double && right instanceof Double) {
-                    return (double)left <= (double)right;
-                }
-                if (left instanceof String leftString && right instanceof String rightString) {
-                    int result = leftString.compareTo( rightString);
-                    return result <= 0;
-                }
-                if (left instanceof Boolean leftBoolean && right instanceof Boolean rightBoolean) {
-                    int result = leftBoolean.compareTo(rightBoolean);
-                    return result <= 0;
-                }
-                throw new RuntimeError(expr.operator, "Operands must have the same type.");
+                checkNumberOperands(expr.operator, left, right);
+                return (double)left <= (double)right;
             case MINUS:
                 checkNumberOperands(expr.operator, left, right);
                 return (double)left - (double)right;
@@ -106,7 +66,7 @@ public class Interpreter implements Expr.Visitor<Object>,
                     return (double)left + (double)right;
                 }
                 if (left instanceof String || right instanceof String) {
-                    return stringify(left) + stringify(right);
+                    return (String)(left) + (String)(right);
                 }
                 throw new RuntimeError(expr.operator, "Operands must be two numbers or two strings.");
             case SLASH:
@@ -206,13 +166,13 @@ public class Interpreter implements Expr.Visitor<Object>,
     }
 
     private void checkNumberOperands(Token operator, Object left, Object right) {
-        if (left instanceof Double || right instanceof Double) return;
+        if (left instanceof Double && right instanceof Double) return;
 
         throw new RuntimeError(operator, "Operands must be numbers.");
     }
 
     private boolean isTruthy(Object object) {
-        if (object ==  null) return false;
+        if (object == null) return false;
         if (object instanceof Boolean) return (boolean) object;
         return true;
     }
@@ -236,11 +196,6 @@ public class Interpreter implements Expr.Visitor<Object>,
         }
 
         return object.toString();
-    }
-
-    @Override
-    public Object visitConditionalExpr(Expr.Conditional expr) {
-        return null;
     }
 
     private Object evaluate(Expr expr) {
@@ -272,11 +227,6 @@ public class Interpreter implements Expr.Visitor<Object>,
     public Void visitBlockStmt(Stmt.Block stmt) {
         executeBlock(stmt.statements, new Environment(environment));
         return null;
-    }
-
-    @Override
-    public Void visitBreakStmt(Stmt.Break stmt) {
-        throw new BreakException(stmt.token);
     }
 
     @Override
@@ -332,11 +282,8 @@ public class Interpreter implements Expr.Visitor<Object>,
 
     @Override
     public Void visitWhileStmt(Stmt.While stmt) {
-        try {
-            while (isTruthy(evaluate(stmt.condition))) {
-                execute(stmt.body);
-            }
-        }  catch (BreakException e) {
+        while (isTruthy(evaluate(stmt.condition))) {
+            execute(stmt.body);
         }
         return null;
     }

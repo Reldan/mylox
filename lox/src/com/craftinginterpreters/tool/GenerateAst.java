@@ -21,13 +21,11 @@ public class GenerateAst {
                 "Literal : Object value",
                 "Logical:  Expr left, Token operator, Expr right",
                 "Unary   : Token operator, Expr right",
-                "Conditional: Expr condition, Expr thenBranch, Expr elseBranch",
                 "Variable: Token name"
         ));
 
         defineAst(outputDir, "Stmt", Arrays.asList(
                 "Block      : List<Stmt> statements",
-                "Break      : Token token",
                 "Expression : Expr expression",
                 "Function   : Token name, List<Token> params, List<Stmt> body",
                 "If         : Expr condition, Stmt thenBranch, Stmt elseBranch",
