@@ -1,15 +1,14 @@
-var a = "global";
-
-
-{
-  fun showA() {
-    print a;
+class Cake {
+  taste() {
+    print "The " + this.flavor + " cake is " + this.adjective + "!";
   }
 
-
-
-
-  showA();
-  var a = "block";
-  showA();
+  set() {
+    this.adjective = "delicious";
+  }
 }
+
+var cake = Cake();
+cake.flavor = "German chocolate";
+cake.set();
+cake.taste(); // Prints "The German chocolate cake is delicious!".
