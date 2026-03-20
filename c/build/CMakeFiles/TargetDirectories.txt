@@ -1,0 +1,3 @@
+/Users/reldan/myprogs/mylox/c/build/CMakeFiles/c.dir
+/Users/reldan/myprogs/mylox/c/build/CMakeFiles/edit_cache.dir
+/Users/reldan/myprogs/mylox/c/build/CMakeFiles/rebuild_cache.dir
